@@ -51,9 +51,17 @@ class RecoveryService:
         self,
         repo: RepositoryInterface,
         gateway: ProviderGatewayInterface,
+        model: Optional[Any] = None,
     ) -> None:
         self.repo = repo
         self.gateway = gateway
+        from opendoor_relay.agent.orchestrator import RecoveryAgentOrchestrator
+        self.orchestrator = RecoveryAgentOrchestrator(repo=repo, gateway=gateway, model=model)
+
+    def get_developer_trace(self, case_id: str) -> Dict[str, Any]:
+        """Delegate developer trace extraction to orchestrator."""
+        return self.orchestrator.get_developer_trace(case_id)
+
 
     def _record_audit(
         self,

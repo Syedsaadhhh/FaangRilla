@@ -4,7 +4,8 @@ import secrets
 import hashlib
 import uuid
 from datetime import datetime, timezone
-from typing import Tuple, List, Dict, Any
+from typing import Tuple, List, Dict, Any, Optional
+
 
 from opendoor_relay.domain.models import (
     RecoveryCase,
@@ -82,5 +83,12 @@ class LocalInboxProviderGateway(ProviderGatewayInterface):
     def get_outbox(self) -> List[Dict[str, Any]]:
         return list(self._outbox)
 
+    def get_dispatched_offer(self, offer_id: str) -> Optional[Dict[str, Any]]:
+        for entry in self._outbox:
+            if entry.get("offer_id") == offer_id:
+                return entry
+        return None
+
     def clear_outbox(self) -> None:
         self._outbox.clear()
+

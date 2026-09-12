@@ -7,72 +7,191 @@ annotated-types==0.8.0
 anyio==4.15.1
     # via
     #   httpx
+    #   httpx2
+    #   mcp
+    #   sse-starlette
     #   starlette
     #   watchfiles
+attrs==26.1.0
+    # via
+    #   jsonschema
+    #   referencing
+boto3==1.43.93
+    # via
+    #   opendoor-relay (backend/pyproject.toml)
+    #   strands-agents
+botocore==1.43.93
+    # via
+    #   boto3
+    #   s3transfer
+    #   strands-agents
 certifi==2026.7.22
     # via
     #   httpcore
     #   httpx
+cffi==2.1.1
+    # via cryptography
 click==8.5.0
     # via uvicorn
 colorama==0.4.6
     # via pytest
+cryptography==50.0.1
+    # via pyjwt
+docstring-parser==0.18.0
+    # via strands-agents
 fastapi==0.141.1
     # via opendoor-relay (backend/pyproject.toml)
 h11==0.16.0
     # via
     #   httpcore
+    #   httpcore2
     #   uvicorn
 httpcore==1.0.9
     # via httpx
+httpcore2==2.12.0
+    # via httpx2
 httptools==0.8.0
     # via uvicorn
 httpx==0.28.1
-    # via opendoor-relay (backend/pyproject.toml)
+    # via
+    #   opendoor-relay (backend/pyproject.toml)
+    #   strands-agents
+httpx2==2.12.0
+    # via mcp
 idna==3.19
     # via
     #   anyio
     #   httpx
+    #   httpx2
 iniconfig==2.3.0
     # via pytest
+jmespath==1.1.0
+    # via
+    #   boto3
+    #   botocore
+jsonschema==4.26.0
+    # via
+    #   mcp
+    #   strands-agents
+jsonschema-specifications==2025.9.1
+    # via jsonschema
+mcp==2.1.1
+    # via strands-agents
+mcp-types==2.1.1
+    # via mcp
+opentelemetry-api==1.44.0
+    # via
+    #   mcp
+    #   opentelemetry-instrumentation
+    #   opentelemetry-instrumentation-threading
+    #   opentelemetry-sdk
+    #   opentelemetry-semantic-conventions
+    #   strands-agents
+opentelemetry-instrumentation==0.65b0
+    # via opentelemetry-instrumentation-threading
+opentelemetry-instrumentation-threading==0.65b0
+    # via strands-agents
+opentelemetry-sdk==1.44.0
+    # via strands-agents
+opentelemetry-semantic-conventions==0.65b0
+    # via
+    #   opentelemetry-instrumentation
+    #   opentelemetry-sdk
 packaging==26.3
-    # via pytest
+    # via
+    #   opentelemetry-instrumentation
+    #   pytest
 pluggy==1.6.0
     # via pytest
+pycparser==3.0
+    # via cffi
 pydantic==2.13.5
     # via
     #   opendoor-relay (backend/pyproject.toml)
     #   fastapi
+    #   mcp
+    #   mcp-types
+    #   strands-agents
 pydantic-core==2.46.5
     # via pydantic
 pygments==2.21.0
     # via pytest
+pyjwt==2.14.0
+    # via mcp
 pytest==9.1.1
     # via
     #   opendoor-relay (backend/pyproject.toml)
     #   pytest-asyncio
 pytest-asyncio==1.4.0
     # via opendoor-relay (backend/pyproject.toml)
+python-dateutil==2.9.0.post0
+    # via botocore
 python-dotenv==1.2.3
     # via uvicorn
+python-multipart==0.0.32
+    # via mcp
+pywin32==312
+    # via mcp
 pyyaml==6.0.3
-    # via uvicorn
+    # via
+    #   strands-agents
+    #   uvicorn
+referencing==0.37.0
+    # via
+    #   jsonschema
+    #   jsonschema-specifications
+rpds-py==2026.6.3
+    # via
+    #   jsonschema
+    #   referencing
+s3transfer==0.19.2
+    # via boto3
+six==1.17.0
+    # via python-dateutil
+sse-starlette==3.4.11
+    # via mcp
 starlette==1.6.0
-    # via fastapi
+    # via
+    #   fastapi
+    #   mcp
+    #   sse-starlette
+strands-agents==1.55.1
+    # via opendoor-relay (backend/pyproject.toml)
+truststore==0.10.4
+    # via
+    #   httpcore2
+    #   httpx2
 typing-extensions==4.16.0
     # via
     #   anyio
     #   fastapi
+    #   mcp
+    #   mcp-types
+    #   opentelemetry-api
+    #   opentelemetry-sdk
+    #   opentelemetry-semantic-conventions
     #   pydantic
     #   pydantic-core
+    #   strands-agents
     #   typing-inspection
 typing-inspection==0.4.4
     # via
     #   fastapi
+    #   mcp
     #   pydantic
+urllib3==2.7.0
+    # via botocore
 uvicorn==0.52.4
-    # via opendoor-relay (backend/pyproject.toml)
+    # via
+    #   opendoor-relay (backend/pyproject.toml)
+    #   mcp
+watchdog==6.0.0
+    # via strands-agents
 watchfiles==1.2.0
     # via uvicorn
 websockets==17.1
     # via uvicorn
+wrapt==2.4.1
+    # via
+    #   opentelemetry-instrumentation
+    #   opentelemetry-instrumentation-threading

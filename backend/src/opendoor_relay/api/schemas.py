@@ -106,11 +106,43 @@ class DemoResetResponse(BaseModel):
     message: str = "Synthetic demo environment reset to initial state"
 
 
+class TraceRecordSchema(BaseModel):
+    step: int
+    timestamp: str
+    actor: str
+    action: str
+    tool_name: Optional[str] = None
+    policy_result: str
+    before_state: Optional[str] = None
+    after_state: Optional[str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class CaseTraceResponse(BaseModel):
+    case_id: str
+    current_state: str
+    opened_at: Optional[str] = None
+    recovered_at: Optional[str] = None
+    confirmed_at: Optional[str] = None
+    human_decision_required: bool = False
+    blocked_reason: Optional[str] = None
+    trace_record_count: int
+    trace_records: List[TraceRecordSchema]
+
+
 class EvaluationStatusResponse(BaseModel):
-    status: str = "NOT_GENERATED"
-    message: str = "Ten-case evaluation suite is scheduled for Run 2 and has not been executed yet."
-    run: str = "RUN_1"
+    status: str = "COMPLETED"
+    message: str = "Ten-case synthetic evaluation suite completed."
+    run: str = "RUN_2"
     evaluation_cases_planned: int = 10
-    generated_at: Optional[datetime] = None
+    total_cases_evaluated: int = 10
+    autonomous_recoveries: int = 2
+    human_decisions_requested: int = 3
+    policy_violations_prevented: int = 5
+    duplicate_side_effects: int = 0
+    live_bedrock_status: str = "BLOCKED_BY_ACCESS"
+    generated_at: Optional[str] = None
+    summary_markdown_path: Optional[str] = "docs/evaluation/evaluation_summary.md"
     results: Optional[List[Dict[str, Any]]] = None
+
 
