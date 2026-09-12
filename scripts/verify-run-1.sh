@@ -9,16 +9,16 @@ echo " OpenDoor Relay — Run 1 Automated Hero Path Verification "
 echo "=========================================================="
 
 # Check health
-echo "[1/8] Verifying GET /health..."
+echo "[1/9] Verifying GET /health..."
 HEALTH=$(curl -s "$BASE_URL/health")
 echo "$HEALTH" | grep -q '"status":"healthy"'
 
 # Reset demo
-echo "[2/8] Resetting synthetic demo data..."
+echo "[2/9] Resetting synthetic demo data..."
 curl -s -X POST "$BASE_URL/api/demo/reset" > /dev/null
 
 # Trigger failure
-echo "[3/8] Triggering Provider A failure..."
+echo "[3/9] Triggering Provider A failure..."
 FAILURE=$(curl -s -X POST "$BASE_URL/api/cases/case-synthetic-001/provider-failure" \
   -H "Content-Type: application/json" \
   -d '{"trigger_text": "Provider A declared sudden unavailability 45m before cutoff"}')
@@ -29,11 +29,11 @@ echo "$FAILURE" | grep -q '"provider_id":"prov-b-beacon"'
 TOKEN=$(echo "$FAILURE" | grep -o '"response_url":"[^"]*' | awk -F'/' '{print $NF}')
 
 # Validate offer
-echo "[4/8] Validating provider offer details via token..."
+echo "[4/9] Validating provider offer details via token..."
 curl -s "$BASE_URL/api/provider/offer/$TOKEN" | grep -q "Beacon Live Access"
 
 # Provider accepts
-echo "[5/8] Recording Provider B acceptance via token..."
+echo "[5/9] Recording Provider B acceptance via token..."
 RESPOND=$(curl -s -X POST "$BASE_URL/api/provider/respond/$TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"action": "ACCEPT", "response_text": "Accepted"}')
@@ -41,14 +41,14 @@ echo "$RESPOND" | grep -q '"offer_state":"ACCEPTED"'
 echo "$RESPOND" | grep -q '"case_state":"ATTENDEE_CONFIRMATION_PENDING"'
 
 # Replay for idempotency
-echo "[6/8] Testing duplicate response idempotency..."
+echo "[6/9] Testing duplicate response idempotency..."
 REPLAY=$(curl -s -X POST "$BASE_URL/api/provider/respond/$TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"action": "ACCEPT", "response_text": "Accepted"}')
 echo "$REPLAY" | grep -q '"offer_state":"ACCEPTED"'
 
 # Attendee confirms
-echo "[7/8] Recording attendee confirmation..."
+echo "[7/9] Recording attendee confirmation..."
 CONFIRM=$(curl -s -X POST "$BASE_URL/api/cases/case-synthetic-001/attendee-confirm")
 echo "$CONFIRM" | grep -q '"state":"ATTENDEE_CONFIRMED"'
 

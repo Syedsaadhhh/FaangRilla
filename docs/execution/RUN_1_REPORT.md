@@ -2,11 +2,11 @@
 
 **Project:** FaangRilla (Provisional Product Name: OpenDoor Relay)  
 **Workspace & Repository:** `FaangRilla`  
-**Git Remote:** None configured locally (no remote was added or guessed)  
+**Git Remote:** None configured locally prior to handoff  
 **Run:** RUN 1  
 **Status:** PASSED  
 **Commit Message:** `feat: establish OpenDoor Relay vertical slice`  
-**Commit SHA:** `fef8d50ef9224f5c739f860e86e099e916e188d3`  
+**Verified Run 1 build commit:** `857fd375a661796a2cd3c70fbbe388368fa5f1c8`  
 
 ---
 
@@ -14,9 +14,9 @@
 
 1. **Repository & Workspace Naming:**
    - Folder name and GitHub repository name remain `FaangRilla`.
-   - Checked `git remote -v`: no remote exists. Preserved exact local state without guessing a remote URL.
+   - Checked `git remote -v`: no remote was configured prior to handoff. Preserved exact local state without guessing a remote URL.
 2. **Centralized Brand Configuration:**
-   - Centralized visible display name in [`frontend/src/config/brand.ts`](file:///c:/Users/ATEC/Desktop/FaangRilla/frontend/src/config/brand.ts) (`BRAND_CONFIG`).
+   - Centralized visible display name in [`frontend/src/config/brand.ts`](../../frontend/src/config/brand.ts) (`BRAND_CONFIG`).
    - Flagged name as provisional (`isProvisional: true`) so the public brand can be safely swapped before Run 4 without code churn.
    - Preserved internal Python package name `opendoor_relay` for structural stability.
 3. **Dynamic Budget Ceiling Policy:**
@@ -25,7 +25,7 @@
 4. **Official Headline Metric vs. Supporting Metric:**
    - **Headline Metric:** `time_to_confirmed_seconds` (`confirmed_at - opened_at`): Time from original provider failure to final attendee confirmation.
    - **Supporting Internal Metric:** `time_to_recovered_seconds` (`recovered_at - opened_at`): Time from failure to backup provider acceptance.
-   - Displayed and labeled prominently in [`RecoveryCasePage.tsx`](file:///c:/Users/ATEC/Desktop/FaangRilla/frontend/src/pages/RecoveryCasePage.tsx) and verified via API responses.
+   - Displayed and labeled prominently in [`RecoveryCasePage.tsx`](../../frontend/src/pages/RecoveryCasePage.tsx) and verified via API responses.
 5. **Evaluation Endpoint State:**
    - `GET /api/evaluation/latest` returns an explicit typed `EvaluationStatusResponse` with `status: "NOT_GENERATED"`, `run: "RUN_1"`, and `results: null`.
    - Zero evaluation results fabricated; the full 10-case evaluation suite is scheduled for Run 2.
@@ -109,15 +109,17 @@
    powershell -ExecutionPolicy Bypass -File scripts/verify-run-1.ps1
    ```
    *Result:* Exit code 0.
-   - `[1/8]` GET `/health` &rarr; `healthy`
-   - `[2/8]` POST `/api/demo/reset` & GET `/api/demo/event` &rarr; Initial state CONFIRMED, Provider A assigned
-   - `[3/8]` POST `/api/cases/case-synthetic-001/provider-failure` &rarr; Case REPLACEMENT_PENDING, Provider B selected (Provider C blocked by dynamic budget ceiling)
-   - `[4/8]` GET `/api/provider/offer/{token}` &rarr; Verified token loads Beacon Live Access offer
-   - `[5/8]` POST `/api/provider/respond/{token}` (ACCEPT) &rarr; Offer ACCEPTED, Case ATTENDEE_CONFIRMATION_PENDING
-   - `[6/8]` Duplicate response replay &rarr; **Idempotent: 0 duplicate audit events, 0 version increments**
-   - `[7/8]` POST `/api/cases/case-synthetic-001/attendee-confirm` &rarr; State ATTENDEE_CONFIRMED, recovery clock locked
+   - `[1/9]` GET `/health` &rarr; `healthy`
+   - `[2/9]` POST `/api/demo/reset` & GET `/api/demo/event` &rarr; Initial state CONFIRMED, Provider A assigned
+   - `[3/9]` POST `/api/cases/case-synthetic-001/provider-failure` &rarr; Case REPLACEMENT_PENDING, Provider B selected (Provider C blocked by dynamic budget ceiling)
+   - `[4/9]` GET `/api/provider/offer/{token}` &rarr; Verified token loads Beacon Live Access offer
+   - `[5/9]` POST `/api/provider/respond/{token}` (ACCEPT) &rarr; Offer ACCEPTED, Case ATTENDEE_CONFIRMATION_PENDING
+   - `[6/9]` Duplicate response replay &rarr; **Idempotent: 0 duplicate audit events, 0 version increments**
+   - `[7/9]` POST `/api/cases/case-synthetic-001/attendee-confirm` &rarr; State ATTENDEE_CONFIRMED, recovery clock locked
    - `[8/9]` Timeline & Metrics &rarr; Verified 6 audit events; Headline Metric: **0.93s**, Supporting Metric: **0.65s**
    - `[9/9]` GET `/api/evaluation/latest` &rarr; Verified explicit typed state `NOT_GENERATED` (`run="RUN_1"`, `results=null`)
+
+   > **Note on Observed Timing:** The 0.93-second headline result observed during Run 1 came directly from the automated local verification script (`verify-run-1.ps1` against local in-memory storage) and is not the final judge-facing live recovery metric. The official live metric will be measured and recorded during deployed runs with real network/cloud interactions.
 
 ---
 
@@ -129,7 +131,7 @@
   - Expiring token generation, SHA-256 hashing, expiration, and invalid token rejection: 3
   - Replay idempotency: 1
   - Hero integration, blocked Provider C, and NOT_GENERATED evaluation check: 3
-- **Frontend Build:** 0 type errors, 0 lint errors, production bundle clean
+- **Frontend Build:** TypeScript check passed, production bundle clean (separate lint check not configured in Run 1)
 - **Verification Script:** 9/9 assertions passed, exit code 0
 - **Duplicate Side Effects:** Exactly 0
 - **Unsafe Executed Actions:** Exactly 0

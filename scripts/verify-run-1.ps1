@@ -50,14 +50,14 @@ if (-not $healthCheck) {
 
 try {
     # Step 1: Health Check
-    Write-Host '[1/8] Verifying GET /health...' -ForegroundColor Green
+    Write-Host '[1/9] Verifying GET /health...' -ForegroundColor Green
     $health = Invoke-RestMethod -Uri "$BaseUrl/health" -Method Get
     if ($health.status -ne 'healthy') {
         throw "Health check failed: expected 'healthy', got '$($health.status)'"
     }
 
     # Step 2: Reset to known state & inspect initial state
-    Write-Host '[2/8] Resetting synthetic demo data and inspecting initial state...' -ForegroundColor Green
+    Write-Host '[2/9] Resetting synthetic demo data and inspecting initial state...' -ForegroundColor Green
     $null = Invoke-RestMethod -Uri "$BaseUrl/api/demo/reset" -Method Post
     $demo = Invoke-RestMethod -Uri "$BaseUrl/api/demo/event" -Method Get
     
@@ -69,7 +69,7 @@ try {
     }
 
     # Step 3: Trigger Provider A decline
-    Write-Host '[3/8] Triggering Provider A failure (declines 45m before cutoff)...' -ForegroundColor Green
+    Write-Host '[3/9] Triggering Provider A failure (declines 45m before cutoff)...' -ForegroundColor Green
     $body = @{ trigger_text = 'Provider A declared sudden unavailability 45m before readiness cutoff' } | ConvertTo-Json
     $failure = Invoke-RestMethod -Uri "$BaseUrl/api/cases/case-synthetic-001/provider-failure" -Method Post -Body $body -ContentType 'application/json'
     
@@ -88,14 +88,14 @@ try {
     }
 
     # Step 4: Validate Provider portal offer retrieval
-    Write-Host '[4/8] Validating provider offer details via token...' -ForegroundColor Green
+    Write-Host '[4/9] Validating provider offer details via token...' -ForegroundColor Green
     $offerDetail = Invoke-RestMethod -Uri "$BaseUrl/api/provider/offer/$token" -Method Get
     if ($offerDetail.provider_name -notlike '*Beacon Live Access*') {
         throw 'Provider offer name mismatch: expected Beacon Live Access'
     }
 
     # Step 5: Provider B accepts offer
-    Write-Host '[5/8] Recording Provider B acceptance via single-use token...' -ForegroundColor Green
+    Write-Host '[5/9] Recording Provider B acceptance via single-use token...' -ForegroundColor Green
     $respondBody = @{ action = 'ACCEPT'; response_text = 'Accepted assignment. In transit with CART equipment.' } | ConvertTo-Json
     $respond = Invoke-RestMethod -Uri "$BaseUrl/api/provider/respond/$token" -Method Post -Body $respondBody -ContentType 'application/json'
     
@@ -107,7 +107,7 @@ try {
     }
 
     # Step 6: Verify Idempotency on repeated acceptance
-    Write-Host '[6/8] Testing duplicate response idempotency (must produce 0 side-effects)...' -ForegroundColor Green
+    Write-Host '[6/9] Testing duplicate response idempotency (must produce 0 side-effects)...' -ForegroundColor Green
     $caseBeforeReplay = Invoke-RestMethod -Uri "$BaseUrl/api/cases/case-synthetic-001" -Method Get
     $timelineBefore = Invoke-RestMethod -Uri "$BaseUrl/api/cases/case-synthetic-001/timeline" -Method Get
     
@@ -124,7 +124,7 @@ try {
     }
 
     # Step 7: Attendee confirms replacement
-    Write-Host '[7/8] Recording attendee confirmation and locking recovery clock...' -ForegroundColor Green
+    Write-Host '[7/9] Recording attendee confirmation and locking recovery clock...' -ForegroundColor Green
     $confirm = Invoke-RestMethod -Uri "$BaseUrl/api/cases/case-synthetic-001/attendee-confirm" -Method Post
     if ($confirm.state -ne 'ATTENDEE_CONFIRMED') {
         throw "Expected final state 'ATTENDEE_CONFIRMED', got '$($confirm.state)'"
