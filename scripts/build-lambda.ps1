@@ -6,19 +6,26 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $backendDir = Join-Path $repoRoot 'backend'
 $distDir = Join-Path $backendDir 'lambda_dist'
-$requirementsPath = Join-Path $backendDir 'requirements.txt'
+$requirementsPath = Join-Path $distDir 'requirements.txt'
 $zipPath = Join-Path $repoRoot 'infra\backend.zip'
 $sourcePath = Join-Path $backendDir 'src\opendoor_relay'
+$lockPath = Join-Path $backendDir 'uv.lock'
 
 Push-Location $backendDir
 try {
-    & uv export --frozen --no-dev --no-emit-project --format requirements-txt --output-file $requirementsPath
-    if ($LASTEXITCODE -ne 0) { throw 'uv export failed' }
-
     if (Test-Path $distDir) {
         Remove-Item -Recurse -Force $distDir
     }
     New-Item -ItemType Directory -Force -Path $distDir | Out-Null
+
+    if (Test-Path $lockPath) {
+        & uv export --frozen --no-dev --no-emit-project --format requirements-txt --output-file $requirementsPath
+    }
+    else {
+        Write-Warning 'backend/uv.lock is missing; resolving dependencies before export.'
+        & uv export --no-dev --no-emit-project --format requirements-txt --output-file $requirementsPath
+    }
+    if ($LASTEXITCODE -ne 0) { throw 'uv export failed' }
 
     # Build Linux-compatible Python 3.12 wheels even when this script runs on Windows.
     & uv pip install -r $requirementsPath --target $distDir --python-version 3.12 --python-platform linux --only-binary ':all:'
