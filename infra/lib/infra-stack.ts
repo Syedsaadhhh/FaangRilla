@@ -16,10 +16,14 @@ export class OpenDoorRelayStack extends cdk.Stack {
     super(scope, id, props);
 
     const stage = props.stage || 'hackathon';
+    const sesFromEmail = process.env.SES_FROM_EMAIL?.trim();
+    if (!sesFromEmail) {
+      throw new Error('SES_FROM_EMAIL must be set to an SES-verified identity before synth or deploy');
+    }
+
     cdk.Tags.of(this).add('project', 'opendoor-relay');
     cdk.Tags.of(this).add('environment', stage);
 
-    // DynamoDB Table
     const table = new dynamodb.Table(this, 'RelayTable', {
       partitionKey: { name: 'pk', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'sk', type: dynamodb.AttributeType.STRING },
@@ -29,9 +33,9 @@ export class OpenDoorRelayStack extends cdk.Stack {
       encryption: dynamodb.TableEncryption.AWS_MANAGED,
     });
 
-    // Lambda Function
     const backendFn = new lambda.Function(this, 'BackendFunction', {
       runtime: lambda.Runtime.PYTHON_3_12,
+      architecture: lambda.Architecture.X86_64,
       handler: 'opendoor_relay.api.app.handler',
       code: lambda.Code.fromAsset(path.join(__dirname, '..', 'backend.zip')),
       timeout: cdk.Duration.seconds(30),
@@ -44,53 +48,51 @@ export class OpenDoorRelayStack extends cdk.Stack {
         AGENT_MODE: 'rehearsal',
         AGENTCORE_STATUS: 'NOT_DEPLOYED',
         BEDROCK_MODEL_ID: process.env.BEDROCK_MODEL_ID || 'us.amazon.nova-micro-v1:0',
-        SES_FROM_EMAIL: process.env.SES_FROM_EMAIL || 'areebamuhammad47@gmail.com',
+        SES_FROM_EMAIL: sesFromEmail,
+        PUBLIC_APP_URL: process.env.PUBLIC_APP_URL || 'http://localhost:5173',
       },
     });
 
-    // Grant DynamoDB access strictly
     table.grantReadWriteData(backendFn);
 
-    // Grant Bedrock access strictly
-    backendFn.addToRolePolicy(new iam.PolicyStatement({
-      actions: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'],
-      resources: [
-        `arn:aws:bedrock:${this.region}::foundation-model/*`,
-        `arn:aws:bedrock:${this.region}:${this.account}:inference-profile/*`
-      ],
-    }));
+    // Rehearsal mode does not receive Bedrock permissions. Add exact model/profile
+    // ARNs only when live Bedrock is deliberately enabled in a later deployment.
 
-    // Grant SES access strictly
     backendFn.addToRolePolicy(new iam.PolicyStatement({
       actions: ['ses:SendEmail', 'ses:SendRawEmail'],
       resources: [
-        `arn:aws:ses:${this.region}:${this.account}:identity/*`
+        cdk.Stack.of(this).formatArn({
+          service: 'ses',
+          resource: 'identity',
+          resourceName: sesFromEmail,
+        }),
       ],
     }));
 
-    // Scheduler Role (Target Role)
     const schedulerRole = new iam.Role(this, 'SchedulerRole', {
       assumedBy: new iam.ServicePrincipal('scheduler.amazonaws.com'),
     });
-    // The target role is restricted to invoking ONLY this specific Lambda
     backendFn.grantInvoke(schedulerRole);
     backendFn.addEnvironment('SCHEDULER_ROLE_ARN', schedulerRole.roleArn);
 
-    // EventBridge Scheduler Policy for Lambda (Creation/Deletion)
     backendFn.addToRolePolicy(new iam.PolicyStatement({
       actions: ['scheduler:CreateSchedule', 'scheduler:DeleteSchedule', 'scheduler:GetSchedule'],
-      resources: [`arn:aws:scheduler:${this.region}:${this.account}:schedule/default/*`],
+      resources: [`arn:${cdk.Aws.PARTITION}:scheduler:${this.region}:${this.account}:schedule/default/*`],
     }));
 
-    // PassRole restricted to the scheduler target role
     backendFn.addToRolePolicy(new iam.PolicyStatement({
       actions: ['iam:PassRole'],
       resources: [schedulerRole.roleArn],
+      conditions: {
+        StringEquals: {
+          'iam:PassedToService': 'scheduler.amazonaws.com',
+        },
+      },
     }));
 
-    // API Gateway
     const api = new apigateway.LambdaRestApi(this, 'RelayApi', {
       handler: backendFn,
+      endpointTypes: [apigateway.EndpointType.REGIONAL],
       deployOptions: {
         throttlingRateLimit: 10,
         throttlingBurstLimit: 5,

@@ -32,3 +32,8 @@ Thumbs.db
 
 # AWS & CDK
 cdk.out/
+infra/cdk.out/
+backend/lambda_dist/
+infra/backend.zip
+infra/outputs.json
+artifacts/

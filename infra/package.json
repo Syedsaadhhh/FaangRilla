@@ -2,17 +2,17 @@
   "name": "opendoor-relay-infra",
   "version": "0.1.0",
   "private": true,
-  "description": "AWS CDK Infrastructure placeholder for OpenDoor Relay (Run 3)",
+  "description": "AWS CDK infrastructure for the OpenDoor Relay rehearsal deployment",
   "scripts": {
     "build": "tsc",
     "cdk": "cdk"
   },
   "devDependencies": {
-    "@types/node": "^26.5.1",
-    "aws-cdk": "^2.160.0",
-    "aws-cdk-lib": "^2.160.0",
-    "constructs": "^10.3.0",
-    "ts-node": "^10.9.2",
-    "typescript": "~5.5.4"
+    "@types/node": "26.5.1",
+    "aws-cdk": "2.160.0",
+    "aws-cdk-lib": "2.160.0",
+    "constructs": "10.3.0",
+    "ts-node": "10.9.2",
+    "typescript": "5.5.4"
   }
 }
