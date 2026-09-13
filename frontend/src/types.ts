@@ -83,7 +83,9 @@ export interface DemoEventData {
     response_url: string;
     disclosed_fields: Record<string, string>;
   }>;
+  agent_mode?: string;
 }
+
 
 export interface TimelineData {
   case_id: string;

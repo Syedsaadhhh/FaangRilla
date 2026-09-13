@@ -48,12 +48,19 @@ def get_service() -> RecoveryService:
 @router.get("/health", response_model=HealthResponse, tags=["Health"])
 def health_check() -> HealthResponse:
     """Health check returning operational status."""
-    return HealthResponse(status="healthy", version="0.1.0", mode="local-deterministic")
+    from opendoor_relay.agent.models import get_agent_mode
+    return HealthResponse(
+        status="healthy",
+        version="0.1.0",
+        mode="local-deterministic",
+        agent_mode=get_agent_mode(),
+    )
 
 
 @router.get("/api/demo/event", response_model=DemoEventResponse, tags=["Demo"])
 def get_demo_event(service: RecoveryService = Depends(get_service)) -> DemoEventResponse:
     """Get seeded synthetic event, plan, case, and providers."""
+    from opendoor_relay.agent.models import get_agent_mode
     event = service.repo.get_event("evt-synthetic-001")
     plan = service.repo.get_plan("plan-synthetic-001")
     case = service.repo.get_case("case-synthetic-001")
@@ -72,7 +79,9 @@ def get_demo_event(service: RecoveryService = Depends(get_service)) -> DemoEvent
         case=case,
         providers=providers,
         recent_outbox=outbox,
+        agent_mode=get_agent_mode(),
     )
+
 
 
 @router.post(

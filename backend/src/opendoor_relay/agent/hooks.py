@@ -72,8 +72,19 @@ class RecoverySafetyHookProvider(HookProvider):
             if offer:
                 case_id = offer.case_id
 
+        case = ctx.repo.get_case(case_id) if case_id else None
+
+        ctx.record_audit(
+            case_id=case_id or "unknown",
+            action="TOOL_PROPOSED",
+            tool_name=tool_name,
+            policy_result="PENDING",
+            before_state=case.state.value if case else None,
+            after_state=case.state.value if case else None,
+            metadata={"tool_name": tool_name, "tool_input": {k: v for k, v in tool_input.items() if "secret" not in k.lower() and "token" not in k.lower()}},
+        )
+
         if case_id:
-            case = ctx.repo.get_case(case_id)
             if not case:
                 event.cancel_tool = f"POLICY_DENIED_NOT_FOUND: Case {case_id} does not exist."
                 return
@@ -104,7 +115,7 @@ class RecoverySafetyHookProvider(HookProvider):
                         action="TOOL_CALL_DENIED_CONSENT_VIOLATION",
                         tool_name=tool_name,
                         policy_result="BLOCKED",
-                        metadata={"reason": reason, "provider_id": provider_id},
+                        metadata={"reason": reason, "policy_code": "POLICY_DENIED_CONSENT_VIOLATION", "provider_id": provider_id},
                     )
                     return
 
@@ -118,7 +129,7 @@ class RecoverySafetyHookProvider(HookProvider):
                         action="TOOL_CALL_DENIED_CONSENT_VIOLATION",
                         tool_name=tool_name,
                         policy_result="BLOCKED",
-                        metadata={"reason": reason, "provider_id": provider_id},
+                        metadata={"reason": reason, "policy_code": "POLICY_DENIED_CONSENT_VIOLATION", "provider_id": provider_id},
                     )
                     return
 
@@ -133,7 +144,7 @@ class RecoverySafetyHookProvider(HookProvider):
                         action="TOOL_CALL_DENIED_NON_EQUIVALENT",
                         tool_name=tool_name,
                         policy_result="BLOCKED",
-                        metadata={"reason": reason, "provider_id": provider_id},
+                        metadata={"reason": reason, "policy_code": "POLICY_DENIED_NON_EQUIVALENT", "provider_id": provider_id},
                     )
                     return
 
@@ -147,7 +158,7 @@ class RecoverySafetyHookProvider(HookProvider):
                         action="TOOL_CALL_DENIED_OVER_BUDGET",
                         tool_name=tool_name,
                         policy_result="BLOCKED",
-                        metadata={"reason": reason, "provider_id": provider_id, "cost": provider.cost, "budget_ceiling": plan.budget_ceiling},
+                        metadata={"reason": reason, "policy_code": "POLICY_DENIED_OVER_BUDGET", "provider_id": provider_id, "cost": provider.cost, "budget_ceiling": plan.budget_ceiling},
                     )
                     return
 
@@ -218,7 +229,50 @@ class RecoverySafetyHookProvider(HookProvider):
                 return
 
         logger.info(f"Safety hook approved tool execution for: {tool_name}")
+        ctx.record_audit(
+            case_id=case_id or "unknown",
+            action="POLICY_APPROVED",
+            tool_name=tool_name,
+            policy_result="APPROVED",
+            before_state=case.state.value if case_id and case else None,
+            after_state=case.state.value if case_id and case else None,
+            metadata={"tool_name": tool_name},
+        )
 
     def after_tool_call(self, event: AfterToolCallEvent) -> None:
-        """Inspect completed tool results and audit trail."""
-        pass
+        """Inspect completed tool results and record execution in audit trail."""
+        try:
+            ctx = get_current_context()
+        except RuntimeError:
+            return
+
+        tool_use = event.tool_use
+        if isinstance(tool_use, dict):
+            tool_name = tool_use.get("name", "")
+            tool_input = tool_use.get("input", {})
+        else:
+            tool_name = getattr(tool_use, "name", "")
+            tool_input = getattr(tool_use, "input", {})
+
+        if not isinstance(tool_input, dict):
+            tool_input = {}
+
+        case_id = tool_input.get("case_id")
+        offer_id = tool_input.get("offer_id")
+        if not case_id and offer_id:
+            offer = ctx.repo.get_offer(offer_id)
+            if offer:
+                case_id = offer.case_id
+
+        case = ctx.repo.get_case(case_id) if case_id else None
+
+        ctx.record_audit(
+            case_id=case_id or "unknown",
+            action="TOOL_EXECUTED",
+            tool_name=tool_name,
+            policy_result="APPROVED",
+            before_state=case.state.value if case else None,
+            after_state=case.state.value if case else None,
+            metadata={"tool_name": tool_name},
+        )
+

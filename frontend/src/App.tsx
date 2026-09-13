@@ -97,7 +97,22 @@ export const App: React.FC = () => {
           </ul>
         </nav>
 
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span
+            style={{
+              fontSize: '0.72rem',
+              fontWeight: 600,
+              padding: '2px 8px',
+              borderRadius: '4px',
+              background: demoData?.agent_mode === 'bedrock' ? '#052e16' : '#1e293b',
+              color: demoData?.agent_mode === 'bedrock' ? '#4ade80' : '#94a3b8',
+              border: '1px solid #334155',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}
+          >
+            Mode: {demoData?.agent_mode || 'rehearsal'}
+          </span>
           <button
             className="btn btn-outline"
             style={{ fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}
@@ -107,6 +122,7 @@ export const App: React.FC = () => {
             {resetting ? 'Resetting...' : '↺ Reset Demo'}
           </button>
         </div>
+
       </header>
 
       <div className="container">

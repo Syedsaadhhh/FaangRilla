@@ -425,16 +425,23 @@ def record_provider_response(offer_id: str, response: str) -> dict:
         offer.state = OfferState.DECLINED
     ctx.repo.save_offer(offer)
 
+    resp_state_val = offer.state.value
+    if "AMBIGUOUS" in action_norm:
+        resp_state_val = "AMBIGUOUS"
+    elif "TIMEOUT" in action_norm:
+        resp_state_val = "TIMEOUT"
+
     result = RecordResponseResult(
         offer_id=offer.offer_id,
         case_id=offer.case_id,
         provider_id=offer.provider_id,
-        response_state=offer.state.value,
+        response_state=resp_state_val,
         response_text=response,
         recorded_at=now.isoformat(),
     )
     ctx.executed_tools.append({"tool": "record_provider_response", "result": result.model_dump()})
     return result.model_dump()
+
 
 
 @tool

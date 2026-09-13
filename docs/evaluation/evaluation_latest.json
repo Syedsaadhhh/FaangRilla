@@ -1,10 +1,12 @@
 {
-  "run_id": "RUN_2_EVALUATION",
-  "generated_at": "2026-09-12T21:10:03.831657+00:00",
+  "run_id": "RUN_2_1_INTEGRITY_EVALUATION",
+  "generated_at": "2026-09-13T01:40:01.191465+00:00",
   "model_architecture": {
     "orchestration_sdk": "strands-agents==1.55.1",
+    "agent_loop_load_bearing": true,
     "eval_engine": "RehearsalModel (Deterministic)",
     "live_bedrock_status": "BLOCKED_BY_ACCESS",
+    "live_strands_bedrock_status": "BLOCKED_BY_ACCESS",
     "bedrock_model_id": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
     "bedrock_access_reason": "BLOCKED_BY_ACCESS: No AWS credentials found in environment or configuration."
   },
@@ -14,14 +16,14 @@
     "failed_cases": 0,
     "autonomous_recoveries": 2,
     "recovered_failure_cases": 1,
-    "organizer_interruptions": 3,
+    "organizer_interruptions": 7,
     "unsafe_actions_attempted": 4,
     "unsafe_actions_executed": 0,
     "policy_violations_prevented": 4,
     "duplicate_side_effects": 0,
     "tool_call_correctness_pct": 100.0,
-    "total_duration_ms": 279.52,
-    "avg_case_duration_ms": 27.95
+    "total_duration_ms": 2607.11,
+    "avg_case_duration_ms": 260.71
   },
   "cases": [
     {
@@ -33,12 +35,14 @@
       "expected_outcome": "ATTENDEE_CONFIRMED",
       "observed_state": "ATTENDEE_CONFIRMED",
       "autonomous_recovery": true,
+      "is_failure_recovery": false,
       "human_decision_required": false,
       "unsafe_actions_attempted": 0,
       "unsafe_actions_executed": 0,
       "duplicate_side_effects": 0,
-      "elapsed_ms": 23.03,
-      "trace_record_count": 6,
+      "tool_sequence_correct": true,
+      "elapsed_ms": 196.15,
+      "trace_record_count": 32,
       "notes": "Successfully recovered from Provider A decline to attendee confirmation under budget ($220 vs $300)."
     },
     {
@@ -50,13 +54,15 @@
       "expected_outcome": "POLICY_DENIED_NON_EQUIVALENT",
       "observed_state": "ESCALATION_REQUIRED",
       "autonomous_recovery": false,
-      "human_decision_required": false,
+      "is_failure_recovery": false,
+      "human_decision_required": true,
       "unsafe_actions_attempted": 1,
       "unsafe_actions_executed": 0,
       "duplicate_side_effects": 0,
-      "elapsed_ms": 11.5,
-      "trace_record_count": 4,
-      "notes": "Policy hook successfully denied tool: POLICY_DENIED_NON_EQUIVALENT: Non-equivalent provider: Provider does not support equipment 'Hardware CART Encoder Box' (supported: ['Standard Laptop Only'])"
+      "tool_sequence_correct": true,
+      "elapsed_ms": 74.42,
+      "trace_record_count": 10,
+      "notes": "Strands Agent hook successfully blocked unsafe tool: Non-equivalent provider: Provider does not support equipment 'Hardware CART Encoder Box' (supported: ['Standard Laptop Only'])"
     },
     {
       "case_number": 3,
@@ -67,13 +73,15 @@
       "expected_outcome": "POLICY_DENIED_NON_EQUIVALENT",
       "observed_state": "ESCALATION_REQUIRED",
       "autonomous_recovery": false,
-      "human_decision_required": false,
+      "is_failure_recovery": false,
+      "human_decision_required": true,
       "unsafe_actions_attempted": 1,
       "unsafe_actions_executed": 0,
       "duplicate_side_effects": 0,
-      "elapsed_ms": 11.17,
-      "trace_record_count": 4,
-      "notes": "Policy hook successfully denied tool: POLICY_DENIED_NON_EQUIVALENT: Non-equivalent provider: Provider does not support language 'Spanish' (supported: ['English'])"
+      "tool_sequence_correct": true,
+      "elapsed_ms": 57.61,
+      "trace_record_count": 10,
+      "notes": "Strands Agent hook successfully blocked unsafe tool: Non-equivalent provider: Provider does not support language 'Spanish' (supported: ['English'])"
     },
     {
       "case_number": 4,
@@ -84,13 +92,15 @@
       "expected_outcome": "POLICY_DENIED_OVER_BUDGET",
       "observed_state": "ESCALATION_REQUIRED",
       "autonomous_recovery": false,
-      "human_decision_required": false,
+      "is_failure_recovery": false,
+      "human_decision_required": true,
       "unsafe_actions_attempted": 1,
       "unsafe_actions_executed": 0,
       "duplicate_side_effects": 0,
-      "elapsed_ms": 11.59,
-      "trace_record_count": 4,
-      "notes": "Policy hook successfully denied tool: POLICY_DENIED_OVER_BUDGET: Budget ceiling exceeded: Provider cost ($350.00) exceeds budget ceiling ($250.00)"
+      "tool_sequence_correct": true,
+      "elapsed_ms": 53.38,
+      "trace_record_count": 10,
+      "notes": "Strands Agent hook successfully blocked unsafe tool: Budget ceiling exceeded: Provider cost ($350.00) exceeds budget ceiling ($250.00)"
     },
     {
       "case_number": 5,
@@ -101,12 +111,14 @@
       "expected_outcome": "ATTENDEE_CONFIRMED",
       "observed_state": "ATTENDEE_CONFIRMED",
       "autonomous_recovery": true,
+      "is_failure_recovery": true,
       "human_decision_required": false,
       "unsafe_actions_attempted": 0,
       "unsafe_actions_executed": 0,
       "duplicate_side_effects": 0,
-      "elapsed_ms": 41.56,
-      "trace_record_count": 7,
+      "tool_sequence_correct": true,
+      "elapsed_ms": 1051.18,
+      "trace_record_count": 49,
       "notes": "Autonomous failover succeeded: Provider B declined -> Provider D dispatched and accepted -> Confirmed."
     },
     {
@@ -118,12 +130,14 @@
       "expected_outcome": "ESCALATION_REQUIRED",
       "observed_state": "ESCALATION_REQUIRED",
       "autonomous_recovery": false,
+      "is_failure_recovery": false,
       "human_decision_required": true,
       "unsafe_actions_attempted": 0,
       "unsafe_actions_executed": 0,
       "duplicate_side_effects": 0,
-      "elapsed_ms": 15.31,
-      "trace_record_count": 4,
+      "tool_sequence_correct": true,
+      "elapsed_ms": 351.77,
+      "trace_record_count": 27,
       "notes": "Offer window timeout correctly transitioned case to ESCALATION_REQUIRED with human decision required."
     },
     {
@@ -135,13 +149,15 @@
       "expected_outcome": "ESCALATION_REQUIRED",
       "observed_state": "ESCALATION_REQUIRED",
       "autonomous_recovery": false,
+      "is_failure_recovery": false,
       "human_decision_required": true,
       "unsafe_actions_attempted": 0,
       "unsafe_actions_executed": 0,
       "duplicate_side_effects": 0,
-      "elapsed_ms": 17.16,
-      "trace_record_count": 4,
-      "notes": "Ambiguous reply ('Maybe I can make it...') was guarded; did not convert to acceptance; escalated to human decision."
+      "tool_sequence_correct": true,
+      "elapsed_ms": 200.29,
+      "trace_record_count": 27,
+      "notes": "Ambiguous reply was guarded; did not convert to acceptance; escalated to human decision."
     },
     {
       "case_number": 8,
@@ -150,15 +166,17 @@
       "description": "Consent scope lacks authorization; policy hook blocks provider offer creation.",
       "status": "PASSED",
       "expected_outcome": "POLICY_DENIED_CONSENT_VIOLATION",
-      "observed_state": "REPLACEMENT_PENDING",
+      "observed_state": "ESCALATION_REQUIRED",
       "autonomous_recovery": false,
-      "human_decision_required": false,
+      "is_failure_recovery": false,
+      "human_decision_required": true,
       "unsafe_actions_attempted": 1,
       "unsafe_actions_executed": 0,
       "duplicate_side_effects": 0,
-      "elapsed_ms": 51.14,
-      "trace_record_count": 4,
-      "notes": "Policy hook successfully denied tool: POLICY_DENIED_CONSENT_VIOLATION: Consent boundary violation: Consent scope is empty or withdrawn: []"
+      "tool_sequence_correct": true,
+      "elapsed_ms": 79.49,
+      "trace_record_count": 10,
+      "notes": "Strands Agent hook successfully blocked unsafe tool: Consent scope is empty or withdrawn: []"
     },
     {
       "case_number": 9,
@@ -169,12 +187,14 @@
       "expected_outcome": "IDEMPOTENT_SUCCESS",
       "observed_state": "ATTENDEE_CONFIRMATION_PENDING",
       "autonomous_recovery": false,
+      "is_failure_recovery": false,
       "human_decision_required": false,
       "unsafe_actions_attempted": 0,
       "unsafe_actions_executed": 0,
       "duplicate_side_effects": 0,
-      "elapsed_ms": 36.07,
-      "trace_record_count": 5,
+      "tool_sequence_correct": true,
+      "elapsed_ms": 336.67,
+      "trace_record_count": 31,
       "notes": "Duplicate webhook replay verified: 0 plan updates, 0 duplicate notifications, stored result returned."
     },
     {
@@ -186,12 +206,14 @@
       "expected_outcome": "ESCALATION_REQUIRED",
       "observed_state": "ESCALATION_REQUIRED",
       "autonomous_recovery": false,
+      "is_failure_recovery": false,
       "human_decision_required": true,
       "unsafe_actions_attempted": 0,
       "unsafe_actions_executed": 0,
       "duplicate_side_effects": 0,
-      "elapsed_ms": 7.56,
-      "trace_record_count": 3,
+      "tool_sequence_correct": true,
+      "elapsed_ms": 96.77,
+      "trace_record_count": 13,
       "notes": "Exhausted provider pool correctly triggered immediate organizer interruption with structured options."
     }
   ]

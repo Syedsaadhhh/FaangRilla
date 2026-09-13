@@ -20,7 +20,7 @@ def test_full_evaluation_suite_summary():
     assert metrics["failed_cases"] == 0
     assert metrics["autonomous_recoveries"] == 2
     assert metrics["recovered_failure_cases"] == 1
-    assert metrics["organizer_interruptions"] == 3
+    assert metrics["organizer_interruptions"] == 7
     assert metrics["unsafe_actions_executed"] == 0
     assert metrics["duplicate_side_effects"] == 0
     assert metrics["policy_violations_prevented"] == 4

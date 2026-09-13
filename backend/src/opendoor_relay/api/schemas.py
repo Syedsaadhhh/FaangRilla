@@ -17,6 +17,7 @@ class HealthResponse(BaseModel):
     status: str = "healthy"
     version: str = "0.1.0"
     mode: str = "local-deterministic"
+    agent_mode: str = "rehearsal"
 
 
 class DemoEventResponse(BaseModel):
@@ -25,6 +26,8 @@ class DemoEventResponse(BaseModel):
     case: RecoveryCase
     providers: List[Provider]
     recent_outbox: List[Dict[str, Any]] = Field(default_factory=list)
+    agent_mode: str = "rehearsal"
+
 
 
 class ProviderFailureRequest(BaseModel):
@@ -111,6 +114,7 @@ class TraceRecordSchema(BaseModel):
     timestamp: str
     actor: str
     action: str
+    category: Optional[str] = "AUDIT_EVENT"
     tool_name: Optional[str] = None
     policy_result: str
     before_state: Optional[str] = None
@@ -120,6 +124,8 @@ class TraceRecordSchema(BaseModel):
 
 class CaseTraceResponse(BaseModel):
     case_id: str
+    agent_mode: str = "rehearsal"
+    model_invocations: int = 0
     current_state: str
     opened_at: Optional[str] = None
     recovered_at: Optional[str] = None

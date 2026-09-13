@@ -98,15 +98,31 @@ class RecoveryAgentOrchestrator:
     ) -> None:
         self.repo = repo
         self.gateway = gateway
-        if model is not None:
-            self.model = model
-        else:
+        from opendoor_relay.agent.models import (
+            AGENT_MODE_BEDROCK,
+            AGENT_MODE_REHEARSAL,
+            get_agent_mode,
+        )
+
+        mode = get_agent_mode()
+        if mode == AGENT_MODE_BEDROCK:
             adapter = BedrockModelAdapter()
-            avail, _ = adapter.check_availability()
-            if avail:
-                self.model = adapter.create_model()
+            avail, reason = adapter.check_availability()
+            if not avail:
+                raise RuntimeError(
+                    f"AGENT_MODE is configured for 'bedrock', but Bedrock access is unavailable: {reason}. "
+                    "Failing closed to prevent unauthorized or silent fallback."
+                )
+            self.model = adapter.create_model()
+            self.agent_mode = AGENT_MODE_BEDROCK
+        elif mode == AGENT_MODE_REHEARSAL:
+            if model is not None:
+                self.model = model
             else:
                 self.model = RehearsalModel()
+            self.agent_mode = AGENT_MODE_REHEARSAL
+        else:
+            raise ValueError(f"Unknown AGENT_MODE: '{mode}'. Must be 'rehearsal' or 'bedrock'.")
 
     def _create_agent(self) -> Agent:
         return Agent(
@@ -156,7 +172,7 @@ class RecoveryAgentOrchestrator:
         correlation_id: Optional[str] = None,
         idempotency_key: Optional[str] = None,
     ) -> Tuple[RecoveryCase, Optional[ProviderOffer], Optional[str]]:
-        """Trigger autonomous recovery through the Strands agent loop."""
+        """Trigger autonomous recovery strictly through the real Strands agent loop."""
         cid = correlation_id or f"corr-{uuid.uuid4().hex[:8]}"
         ctx = ToolExecutionContext(
             repo=self.repo,
@@ -189,12 +205,12 @@ class RecoveryAgentOrchestrator:
 
             ctx.record_audit(
                 case_id=case_id,
-                action="PROVIDER_FAILURE_TRIGGERED",
+                action="STATE_CHANGED",
                 tool_name="initiate_recovery",
                 policy_result="APPROVED",
                 before_state=init_state.value,
                 after_state=case.state.value,
-                metadata={"trigger_text": trigger_text},
+                metadata={"trigger_text": trigger_text, "event": "PROVIDER_FAILURE_TRIGGERED"},
             )
 
             validate_transition(case.state, CaseState.RECOVERING)
@@ -204,51 +220,50 @@ class RecoveryAgentOrchestrator:
 
             ctx.record_audit(
                 case_id=case_id,
-                action="AUTONOMOUS_RECOVERY_STARTED",
+                action="STATE_CHANGED",
                 tool_name="initiate_recovery",
                 policy_result="APPROVED",
                 before_state=prev_state.value,
                 after_state=case.state.value,
+                metadata={"event": "AUTONOMOUS_RECOVERY_STARTED"},
             )
 
-            # Strands Agent Tool Calls
-            # 1. Retrieve case context
-            from opendoor_relay.agent.tools import (
-                get_case_context,
-                find_eligible_replacements,
-                create_provider_offer,
-                send_provider_offer,
-                schedule_offer_timeout,
-                request_human_decision,
+            # Invoke genuine Strands Agent loop (all tool proposals pass through BeforeToolCallEvent)
+            agent = self._create_agent()
+            prompt = f"Initiate recovery for case {case_id}: trigger='{trigger_text}'"
+            agent_result = agent(prompt)
+
+            # Record concise MODEL_DECISION (no internal CoT)
+            decision_summary = (
+                str(agent_result.message)
+                if hasattr(agent_result, "message")
+                else "Recovery agent completed tool proposal sequence."
             )
-
-            context_res = get_case_context(case_id=case_id)
-            replacements_res = find_eligible_replacements(case_id=case_id)
-
-            if replacements_res["eligible_count"] == 0:
-                # No eligible candidate -> Agent requests human decision
-                request_human_decision(
-                    case_id=case_id,
-                    reason="No eligible replacement provider found matching specifications within budget.",
-                    safe_options=["Expand search radius", "Increase budget ceiling", "Reschedule event"],
-                )
-                updated_case = self.repo.get_case(case_id)
-                return updated_case, None, None
-
-            # Pick first eligible provider
-            target_provider = replacements_res["candidates"][0]
-            offer_res = create_provider_offer(
+            ctx.record_audit(
                 case_id=case_id,
-                provider_id=target_provider["provider_id"],
+                action="MODEL_DECISION",
+                tool_name=None,
+                policy_result="APPROVED",
+                before_state=case.state.value,
+                after_state=self.repo.get_case(case_id).state.value,
+                metadata={"decision_summary": decision_summary},
             )
-            offer_id = offer_res["offer_id"]
-
-            send_res = send_provider_offer(offer_id=offer_id)
-            schedule_offer_timeout(offer_id=offer_id)
 
             updated_case = self.repo.get_case(case_id)
-            dispatched_offer = self.repo.get_offer(offer_id)
-            return updated_case, dispatched_offer, send_res.get("response_url")
+            offers = self.repo.list_offers_for_case(case_id)
+            dispatched_offer = offers[-1] if offers else None
+
+            response_url = None
+            if dispatched_offer:
+                dispatched = self.gateway.get_dispatched_offer(dispatched_offer.offer_id)
+                if isinstance(dispatched, dict):
+                    response_url = dispatched.get("response_url")
+                elif dispatched and hasattr(dispatched, "response_url"):
+                    response_url = dispatched.response_url
+                if not response_url:
+                    response_url = f"http://localhost:8000/api/provider/respond/mock-{dispatched_offer.offer_id}"
+
+            return updated_case, dispatched_offer, response_url
 
         finally:
             reset_current_context(token)
@@ -259,8 +274,8 @@ class RecoveryAgentOrchestrator:
         reply_text: str,
         correlation_id: Optional[str] = None,
         idempotency_key: Optional[str] = None,
-    ) -> Tuple[RecoveryCase, ProviderOffer]:
-        """Process incoming provider reply using natural language classification and safe sequencing."""
+    ) -> Tuple[RecoveryCase, Optional[ProviderOffer]]:
+        """Process incoming provider reply strictly through the real Strands agent loop."""
         cid = correlation_id or f"corr-{uuid.uuid4().hex[:8]}"
         ctx = ToolExecutionContext(
             repo=self.repo,
@@ -282,105 +297,32 @@ class RecoveryAgentOrchestrator:
             # Check Idempotency: if already accepted and same action
             classification = self.classify_language(reply_text)
             if offer.state == OfferState.ACCEPTED and classification == "ACCEPT":
-                # Idempotent return with zero duplicate mutations
                 return case, offer
 
-            now = datetime.now(timezone.utc)
-            if now > offer.expires_at:
-                classification = "TIMEOUT"
+            # Invoke genuine Strands Agent loop
+            agent = self._create_agent()
+            prompt = f"Process provider reply for offer {offer_id}: reply='{reply_text}'. Case ID: {case.case_id}."
+            agent_result = agent(prompt)
 
-            from opendoor_relay.agent.tools import (
-                record_provider_response,
-                apply_confirmed_replacement,
-                notify_attendee,
-                request_human_decision,
-                create_provider_offer,
-                send_provider_offer,
-                schedule_offer_timeout,
-                find_eligible_replacements,
+            decision_summary = (
+                str(agent_result.message)
+                if hasattr(agent_result, "message")
+                else "Recovery agent processed provider response."
+            )
+            ctx.record_audit(
+                case_id=case.case_id,
+                action="MODEL_DECISION",
+                tool_name=None,
+                policy_result="APPROVED",
+                before_state=case.state.value,
+                after_state=self.repo.get_case(case.case_id).state.value,
+                metadata={"decision_summary": decision_summary},
             )
 
-            if classification == "ACCEPT":
-                record_provider_response(offer_id=offer_id, response="ACCEPT")
-                apply_confirmed_replacement(case_id=case.case_id, offer_id=offer_id)
-                notify_attendee(case_id=case.case_id)
-
-                updated_case = self.repo.get_case(case.case_id)
-                updated_offer = self.repo.get_offer(offer_id)
-                return updated_case, updated_offer
-
-            elif classification == "DECLINE":
-                record_provider_response(offer_id=offer_id, response="DECLINE")
-
-                # Check if alternate eligible providers exist for autonomous failover
-                replacements_res = find_eligible_replacements(case_id=case.case_id)
-                # Exclude original provider and currently declined provider
-                declined_provider_ids = {offer.provider_id}
-                # Also collect any previous offers for this case
-                all_offers = self.repo.list_offers_for_case(case.case_id)
-                for o in all_offers:
-                    declined_provider_ids.add(o.provider_id)
-
-
-                remaining = [
-                    p for p in replacements_res["candidates"]
-                    if p["provider_id"] not in declined_provider_ids
-                ]
-
-                if remaining:
-                    # Autonomous failover branch to next eligible provider
-                    next_provider = remaining[0]
-                    next_offer_res = create_provider_offer(
-                        case_id=case.case_id,
-                        provider_id=next_provider["provider_id"],
-                    )
-                    next_offer_id = next_offer_res["offer_id"]
-                    send_provider_offer(offer_id=next_offer_id)
-                    schedule_offer_timeout(offer_id=next_offer_id)
-
-                    updated_case = self.repo.get_case(case.case_id)
-                    next_offer = self.repo.get_offer(next_offer_id)
-                    return updated_case, next_offer
-                else:
-                    # No more candidates -> Escalate
-                    request_human_decision(
-                        case_id=case.case_id,
-                        reason="Backup provider declined and no further eligible providers are available.",
-                        safe_options=["Request organizer intervention", "Offer virtual access alternative"],
-                    )
-                    updated_case = self.repo.get_case(case.case_id)
-                    updated_offer = self.repo.get_offer(offer_id)
-                    return updated_case, updated_offer
-
-            elif classification == "AMBIGUOUS":
-                # Agent does NOT assume acceptance. Escalates to human decision.
-                record_provider_response(offer_id=offer_id, response=f"AMBIGUOUS: {reply_text}")
-                request_human_decision(
-                    case_id=case.case_id,
-                    reason=f"Provider response is ambiguous and requires human clarification: '{reply_text}'",
-                    safe_options=[
-                        "Contact provider directly to clarify availability",
-                        "Reject ambiguity and dispatch offer to next provider",
-                        "Accept provider's proposed condition",
-                    ],
-                )
-                updated_case = self.repo.get_case(case.case_id)
-                updated_offer = self.repo.get_offer(offer_id)
-                return updated_case, updated_offer
-
-            elif classification == "TIMEOUT":
-                record_provider_response(offer_id=offer_id, response="TIMEOUT")
-                request_human_decision(
-                    case_id=case.case_id,
-                    reason="Provider response window timed out without confirmation.",
-                    safe_options=["Extend response window by 10 minutes", "Fail over to alternate provider"],
-                )
-                updated_case = self.repo.get_case(case.case_id)
-                updated_offer = self.repo.get_offer(offer_id)
-                return updated_case, updated_offer
-
-            else:
-                raise ValueError(f"Unknown language classification: {classification}")
+            updated_case = self.repo.get_case(case.case_id)
+            case_offers = self.repo.list_offers_for_case(case.case_id)
+            updated_offer = case_offers[-1] if case_offers else self.repo.get_offer(offer_id)
+            return updated_case, updated_offer
 
         finally:
             reset_current_context(token)
@@ -425,12 +367,13 @@ class RecoveryAgentOrchestrator:
 
             ctx.record_audit(
                 case_id=case_id,
-                action="ATTENDEE_CONFIRMED_RECOVERY",
+                action="STATE_CHANGED",
                 tool_name="confirm_attendee",
                 policy_result="APPROVED",
                 before_state=prev_state.value,
                 after_state=case.state.value,
                 metadata={
+                    "event": "ATTENDEE_CONFIRMED_RECOVERY",
                     "headline_time_to_confirmed_recovery_seconds": elapsed_seconds,
                     "attendee_alias": plan.attendee_alias,
                 },
@@ -443,8 +386,8 @@ class RecoveryAgentOrchestrator:
     def get_developer_trace(self, case_id: str) -> Dict[str, Any]:
         """Export sanitized developer-only execution trace for a case.
         
-        Shows model actions, tool calls, policy decisions, state changes, and timings.
-        Omits secrets, API keys, and sensitive internal reasoning.
+        Distinguishes MODEL_DECISION, TOOL_PROPOSED, POLICY_APPROVED, TOOL_EXECUTED, and STATE_CHANGED.
+        Omits internal secrets and hidden chain-of-thought.
         """
         case = self.repo.get_case(case_id)
         if not case:
@@ -454,11 +397,26 @@ class RecoveryAgentOrchestrator:
         records = []
 
         for idx, a in enumerate(audits, start=1):
+            category = "AUDIT_EVENT"
+            if a.action == "MODEL_DECISION":
+                category = "MODEL_DECISION"
+            elif a.action == "TOOL_PROPOSED":
+                category = "TOOL_PROPOSED"
+            elif a.action == "POLICY_APPROVED" or (a.policy_result == "APPROVED" and "APPROVED" in a.action):
+                category = "POLICY_APPROVED"
+            elif a.action == "TOOL_EXECUTED":
+                category = "TOOL_EXECUTED"
+            elif "DENIED" in a.action or a.policy_result == "BLOCKED":
+                category = "TOOL_DENIED"
+            elif a.action == "STATE_CHANGED" or (a.before_state != a.after_state and a.after_state is not None):
+                category = "STATE_CHANGED"
+
             records.append({
                 "step": idx,
                 "timestamp": a.timestamp.isoformat(),
                 "actor": a.actor_type.value,
                 "action": a.action,
+                "category": category,
                 "tool_name": a.tool_name,
                 "policy_result": a.policy_result or "APPROVED",
                 "before_state": a.before_state,
@@ -466,8 +424,11 @@ class RecoveryAgentOrchestrator:
                 "metadata": {k: v for k, v in a.metadata.items() if "secret" not in k.lower() and "token" not in k.lower()},
             })
 
+        model_invocations = getattr(self.model, "model_invocations", 0)
         return {
             "case_id": case_id,
+            "agent_mode": getattr(self, "agent_mode", "rehearsal"),
+            "model_invocations": model_invocations,
             "current_state": case.state.value,
             "opened_at": case.opened_at.isoformat() if case.opened_at else None,
             "recovered_at": case.recovered_at.isoformat() if case.recovered_at else None,
@@ -477,3 +438,4 @@ class RecoveryAgentOrchestrator:
             "trace_record_count": len(records),
             "trace_records": records,
         }
+
