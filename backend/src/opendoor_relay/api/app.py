@@ -44,3 +44,6 @@ def create_app(
 
 
 app = create_app()
+
+from mangum import Mangum
+handler = Mangum(app)
