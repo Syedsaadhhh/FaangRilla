@@ -40,7 +40,6 @@ export class OpenDoorRelayStack extends cdk.Stack {
       code: lambda.Code.fromAsset(path.join(__dirname, '..', 'backend.zip')),
       timeout: cdk.Duration.seconds(30),
       memorySize: 512,
-      reservedConcurrentExecutions: 5,
       logRetention: logs.RetentionDays.ONE_WEEK,
       environment: {
         DYNAMODB_TABLE_NAME: table.tableName,
