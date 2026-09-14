@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">OpenDoor Relay deployed architecture</title>
+  <desc id="desc">A Vercel-hosted React interface calls an AWS API Gateway and Lambda FastAPI backend. A Strands Agent in deterministic rehearsal mode coordinates policy tools backed by DynamoDB, EventBridge Scheduler, CloudWatch, and configured SES. Bedrock and AgentCore are shown as blocked and not deployed.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07111f"/>
+      <stop offset="1" stop-color="#111d33"/>
+    </linearGradient>
+    <linearGradient id="hero" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#22c55e"/>
+      <stop offset="1" stop-color="#14b8a6"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" flood-opacity=".28"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#7dd3fc"/>
+    </marker>
+    <style>
+      .title{font:700 40px Inter,Arial,sans-serif;fill:#f8fafc}.sub{font:400 18px Inter,Arial,sans-serif;fill:#9fb0c8}.label{font:700 19px Inter,Arial,sans-serif;fill:#f8fafc}.body{font:400 15px Inter,Arial,sans-serif;fill:#bfd0e5}.micro{font:600 12px Inter,Arial,sans-serif;fill:#91a4bd;letter-spacing:1px}.box{fill:#14233a;stroke:#35516f;stroke-width:2}.aws{fill:#27251f;stroke:#ff9900;stroke-width:2}.strands{fill:#102d29;stroke:#22c55e;stroke-width:3}.blocked{fill:#241b26;stroke:#f472b6;stroke-width:2;stroke-dasharray:10 8}.line{fill:none;stroke:#7dd3fc;stroke-width:3;marker-end:url(#arrow)}.thin{fill:none;stroke:#64748b;stroke-width:2;marker-end:url(#arrow)}
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="1440" cy="85" r="190" fill="#22c55e" opacity=".05"/>
+  <circle cx="130" cy="820" r="250" fill="#38bdf8" opacity=".04"/>
+
+  <text x="70" y="72" class="title">OpenDoor Relay</text>
+  <text x="70" y="105" class="sub">Deployed accessibility-continuity architecture · submission build</text>
+  <rect x="1260" y="48" width="270" height="46" rx="23" fill="#102d29" stroke="#22c55e"/>
+  <circle cx="1290" cy="71" r="7" fill="#22c55e"/>
+  <text x="1310" y="77" class="body" fill="#dcfce7">AWS rehearsal stack live</text>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="165" width="300" height="100" rx="18" class="box"/>
+    <text x="95" y="199" class="micro">PEOPLE</text>
+    <text x="95" y="228" class="label">Organizer + Attendee</text>
+    <text x="95" y="250" class="body">Human decisions stay visible</text>
+
+    <rect x="410" y="165" width="270" height="100" rx="18" class="box"/>
+    <text x="435" y="199" class="micro">VERCEL · LIVE</text>
+    <text x="435" y="228" class="label">React + Vite UI</text>
+    <text x="435" y="250" class="body">Synthetic end-to-end demo</text>
+
+    <rect x="760" y="165" width="270" height="100" rx="18" class="aws"/>
+    <text x="785" y="199" class="micro" fill="#ffb84d">AWS · LIVE</text>
+    <text x="785" y="228" class="label">API Gateway</text>
+    <text x="785" y="250" class="body">HTTPS proxy + throttling</text>
+
+    <rect x="1110" y="165" width="360" height="100" rx="18" class="aws"/>
+    <text x="1135" y="199" class="micro" fill="#ffb84d">AWS · LIVE</text>
+    <text x="1135" y="228" class="label">Lambda + FastAPI</text>
+    <text x="1135" y="250" class="body">Validation, routes, service boundary</text>
+  </g>
+
+  <path d="M370 215 H420" class="line"/>
+  <path d="M680 215 H750" class="line"/>
+  <path d="M1030 215 H1100" class="line"/>
+
+  <g filter="url(#shadow)">
+    <rect x="430" y="350" width="740" height="145" rx="24" class="strands"/>
+    <rect x="430" y="350" width="10" height="145" rx="5" fill="url(#hero)"/>
+    <text x="470" y="390" class="micro" fill="#86efac">LOAD-BEARING AGENT FRAMEWORK</text>
+    <text x="470" y="430" class="label" font-size="25">Strands Agents SDK</text>
+    <text x="470" y="458" class="body">Real Agent loop · typed tools · policy hooks</text>
+    <rect x="905" y="385" width="220" height="70" rx="14" fill="#0b1f1c" stroke="#34d399"/>
+    <text x="930" y="414" class="micro" fill="#86efac">MODEL MODE</text>
+    <text x="930" y="440" class="body" fill="#dcfce7">Deterministic rehearsal</text>
+  </g>
+
+  <path d="M1290 265 V315 H800 V340" class="line"/>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="585" width="320" height="130" rx="18" class="box"/>
+    <text x="95" y="620" class="micro">DETERMINISTIC GUARDRAILS</text>
+    <text x="95" y="650" class="label">Policy + State Tools</text>
+    <text x="95" y="678" class="body">Equivalence · budget · consent</text>
+    <text x="95" y="700" class="body">single-use offers · escalation</text>
+
+    <rect x="450" y="585" width="250" height="130" rx="18" class="aws"/>
+    <text x="475" y="620" class="micro" fill="#ffb84d">AWS · LIVE</text>
+    <text x="475" y="650" class="label">DynamoDB</text>
+    <text x="475" y="678" class="body">Cases, offers, audit trail</text>
+
+    <rect x="760" y="585" width="250" height="130" rx="18" class="aws"/>
+    <text x="785" y="620" class="micro" fill="#ffb84d">AWS · LIVE</text>
+    <text x="785" y="650" class="label">EventBridge</text>
+    <text x="785" y="678" class="body">Bounded offer timeouts</text>
+
+    <rect x="1070" y="585" width="220" height="130" rx="18" class="aws"/>
+    <text x="1095" y="620" class="micro" fill="#ffb84d">CONFIGURED</text>
+    <text x="1095" y="650" class="label">Amazon SES</text>
+    <text x="1095" y="678" class="body">Sender binding only</text>
+
+    <rect x="1350" y="585" width="180" height="130" rx="18" class="aws"/>
+    <text x="1375" y="620" class="micro" fill="#ffb84d">AWS · LIVE</text>
+    <text x="1375" y="650" class="label">CloudWatch</text>
+    <text x="1375" y="678" class="body">Runtime logs</text>
+  </g>
+
+  <path d="M650 495 V545 H230 V575" class="thin"/>
+  <path d="M740 495 V545 H575 V575" class="thin"/>
+  <path d="M830 495 V545 H885 V575" class="thin"/>
+  <path d="M920 495 V545 H1180 V575" class="thin"/>
+  <path d="M1010 495 V545 H1440 V575" class="thin"/>
+
+  <rect x="430" y="778" width="350" height="82" rx="16" class="blocked"/>
+  <text x="455" y="811" class="micro" fill="#f9a8d4">BLOCKED BY DAILY QUOTA</text>
+  <text x="455" y="839" class="label">Amazon Bedrock inference</text>
+
+  <rect x="820" y="778" width="350" height="82" rx="16" class="blocked"/>
+  <text x="845" y="811" class="micro" fill="#f9a8d4">NOT DEPLOYED</text>
+  <text x="845" y="839" class="label">Amazon Bedrock AgentCore</text>
+
+  <text x="1225" y="808" class="micro">TRUTHFUL DEMO STATE</text>
+  <text x="1225" y="836" class="body">Solid = deployed/configured</text>
+  <text x="1225" y="858" class="body">Dashed = blocked/future</text>
+</svg>
