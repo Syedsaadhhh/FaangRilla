@@ -30,6 +30,16 @@ The orchestration loop exercises the genuine Strands Agent framework, but the un
 
 ---
 
+## Demo & Submission
+
+For the final recording flow, exact click path, side-by-side screen/voice script, hooks, Q&A, and editing rhythm, use:
+
+- [`FINAL_DEMO_RECORDING_MASTER.md`](FINAL_DEMO_RECORDING_MASTER.md)
+- [`DEMO_RUNBOOK.md`](DEMO_RUNBOOK.md)
+- [`DEVPOST_SUBMISSION.md`](DEVPOST_SUBMISSION.md)
+
+---
+
 ## Local Setup & Quickstart
 
 ### Prerequisites
