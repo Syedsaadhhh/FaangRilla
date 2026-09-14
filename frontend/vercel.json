@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://k9zn4jy720.execute-api.us-east-1.amazonaws.com/prod/api/:path*"
+    },
+    {
+      "source": "/health",
+      "destination": "https://k9zn4jy720.execute-api.us-east-1.amazonaws.com/prod/health"
+    },
+    {
+      "source": "/provider/respond/:path*",
+      "destination": "/index.html"
+    }
+  ]
+}
