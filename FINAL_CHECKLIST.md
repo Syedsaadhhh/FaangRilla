@@ -1,20 +1,23 @@
 # FINAL CHECKLIST BEFORE SUBMISSION
 
 - [x] **Strands SDK Integration**: Verified load-bearing usage in `orchestrator.py` and `recovery.py`.
-- [x] **Privacy Scan**: Verified no AWS credentials, private keys, or personal emails are committed.
-- [x] **README Truth**: Updated README to accurately reflect rehearsal mode, AWS infrastructure, and Strands usage.
-- [x] **Tests Passing**: 46/46 pytest backend tests passing (100%).
-- [x] **Frontend Built**: `npm run build` completed successfully with `VITE_API_BASE_URL` support.
-- [x] **Architecture Diagram**: Mermaid syntax repaired in `docs/assets/opendoor-relay-architecture.mmd`.
-- [x] **Demo Package**: Runbook, Script, and Shot List exist for the video recording.
-- [x] **Devpost Draft**: `DEVPOST_SUBMISSION.md` prepared.
-- [x] **AWS Deployment**: Final Strands-integrated backend deployed successfully to `OpenDoorRelayStack`.
-- [x] **Live Health Verification**: `/health` returned `healthy`, `agent_framework=strands-agents`, and `model_mode=deterministic-rehearsal`.
-- [x] **Final GitHub Push**: Final code and deployment evidence are on `main`.
-- [ ] **AWS-backed Hero Flow Check**: Run the frontend against the deployed API and complete one clean recovery path before recording.
-- [ ] **Record Video**: Record the final demo (max 5 minutes).
-- [ ] **Upload Video**: Upload to YouTube/Vimeo and link to Devpost.
-- [ ] **Submit Devpost**: Click the final "Submit" button before 00:00:00 UTC on September 15, 2026.
+- [x] **Privacy Scan**: No AWS credentials, private keys, or personal email values were found in tracked source.
+- [x] **README Truth**: README accurately distinguishes deployed rehearsal infrastructure from blocked Bedrock and undeployed AgentCore.
+- [x] **Tests Passing**: Fresh verification completed with 46/46 backend tests passing.
+- [x] **Frontend Built**: The latest loading-timeout and retry-state changes passed TypeScript and Vite production builds.
+- [x] **Architecture Diagram**: Uploadable 1600×900 PNG plus editable SVG/Mermaid sources exist in `docs/assets/`.
+- [x] **Demo Package**: Runbook, script, shot list, and final recording master exist.
+- [x] **Devpost Draft**: `DEVPOST_SUBMISSION.md` is prepared.
+- [x] **AWS Deployment**: The Strands-integrated backend is deployed in `OpenDoorRelayStack`.
+- [x] **Live Health Verification**: Vercel `/health` returns `healthy`, `agent_framework=strands-agents`, and `model_mode=deterministic-rehearsal`.
+- [x] **AWS-backed Hero Flow**: The public Vercel URL completed failure → provider acceptance → attendee confirmation → timeline, then reset to `CONFIRMED`.
+- [x] **Public Repository**: Verified public with MIT license and final source on `main`.
+- [x] **Live Frontend**: https://opendoor-relay.vercel.app/ serves the UI and proxies to the AWS API.
+- [ ] **Redeploy Latest Retry Fix**: The Vercel project is a manual deployment and is not GitHub-linked. Connect `Syedsaadhhh/FaangRilla`, set Root Directory to `frontend`, and deploy current `main`.
+- [ ] **Record Video**: Record the final working demo (maximum 5 minutes).
+- [ ] **Upload Video**: Upload publicly/unlisted and verify playback while signed out.
+- [ ] **Submit Devpost**: Upload the architecture PNG, add the video/live links and AWS Builder ID, then submit before the deadline.
 
 ## Truth Boundary
-The deployed backend uses the genuine Strands Agents SDK, but model inference is still `deterministic-rehearsal` because Bedrock is quota-blocked. `AgentCore` is not deployed. Do not claim otherwise in the demo or submission.
+
+The deployed backend uses the genuine Strands Agents SDK, but model inference is `deterministic-rehearsal` because Bedrock is quota-blocked. AgentCore is not deployed. SES sender configuration exists, but live email delivery is not claimed. Do not state otherwise in the demo or submission.
