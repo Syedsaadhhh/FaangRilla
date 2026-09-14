@@ -13,12 +13,12 @@ The core of OpenDoor Relay's recovery capability is built using the **Strands Ag
 4. Leaves a transparent, sanitized developer trace distinguishing `MODEL_DECISION` from `POLICY_APPROVED` actions.
 
 ## AWS Architecture
-The production architecture utilizes a robust serverless stack defined entirely via AWS CDK (`infra/`):
+The deployed rehearsal architecture uses a serverless stack defined via AWS CDK (`infra/`):
 - **API Gateway (RelayApi):** Exposes strictly validated REST endpoints.
 - **AWS Lambda (BackendFunction):** Runs the Python 3.12 FastAPI backend + Strands orchestration.
-- **Amazon DynamoDB (RelayTable):** Provides robust state persistence with strict idempotency keys.
-- **Amazon EventBridge Scheduler:** Manages bounded execution windows for offer timeouts.
-- **Amazon SES:** Handles safe email delivery for attendee notifications.
+- **Amazon DynamoDB (RelayTable):** Persists synthetic cases, offers, idempotency keys, and audit transitions.
+- **Amazon EventBridge Scheduler:** The deployed permissions support bounded offer-timeout scheduling.
+- **Amazon SES:** Sender configuration is environment-bound; live email delivery is not claimed in this rehearsal.
 
 *(Note: In the current deployed environment, reserved concurrency and live Bedrock inference have been removed or downgraded to rehearsal mode due to hackathon-time AWS account quota constraints. The Lambda runs without concurrency locks, and API Gateway acts as the throttling boundary.)*
 
@@ -29,6 +29,14 @@ To navigate AWS Bedrock access limits during the hackathon sprint, the deploymen
 The orchestration loop exercises the genuine Strands Agent framework, but the underlying LLM is stubbed with a deterministic local model (`RehearsalModel`) that safely navigates the predefined test fixtures without needing live Bedrock tokens. This ensures the architecture and business logic can be fully evaluated.
 
 ---
+
+## Live Demo
+
+- **Frontend:** https://opendoor-relay.vercel.app/
+- **Health:** https://opendoor-relay.vercel.app/health
+- **Architecture:** [`docs/assets/opendoor-relay-architecture.png`](docs/assets/opendoor-relay-architecture.png)
+
+The public demo uses synthetic data and the deterministic rehearsal model described above.
 
 ## Demo & Submission
 
