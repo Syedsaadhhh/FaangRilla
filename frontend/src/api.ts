@@ -2,6 +2,8 @@ import { DemoEventData, TimelineData } from './types';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
+const INITIAL_LOAD_TIMEOUT_MS = 15_000;
+
 export async function fetchHealth(): Promise<{ status: string; mode: string }> {
   const res = await fetch(`${API_BASE}/health`);
   if (!res.ok) throw new Error(`Health check failed: ${res.statusText}`);
@@ -9,9 +11,21 @@ export async function fetchHealth(): Promise<{ status: string; mode: string }> {
 }
 
 export async function fetchDemoEvent(): Promise<DemoEventData> {
-  const res = await fetch(`${API_BASE}/api/demo/event`);
-  if (!res.ok) throw new Error(`Failed to load demo event: ${res.statusText}`);
-  return res.json();
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), INITIAL_LOAD_TIMEOUT_MS);
+
+  try {
+    const res = await fetch(`${API_BASE}/api/demo/event`, { signal: controller.signal });
+    if (!res.ok) throw new Error(`Failed to load demo event: ${res.statusText}`);
+    return res.json();
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new Error('The live demo took too long to respond. Please retry.');
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
+  }
 }
 
 export async function triggerProviderFailure(
