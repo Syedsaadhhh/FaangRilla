@@ -12,9 +12,9 @@
 - Configured to point to the AWS API endpoint via `VITE_API_BASE_URL`.
 
 ## 3. Infrastructure Synthesis (CDK)
-**Status**: BLOCKED BY CREDENTIALS
-- `cdk synth` and `cdk deploy` failed due to `SSOTokenProviderFailure: SSO Token refresh failed`.
-- `OpenDoorRelayStack` deployment state remains the one from Run 3 Partial Deployment.
+**Status**: PASSED
+- `cdk synth` and `cdk deploy` completed successfully.
+- `OpenDoorRelayStack` is fully deployed with the latest Strands-integrated backend.
 
 ## 4. Security Scan
 **Status**: PASSED
@@ -22,4 +22,4 @@
 - 0 leaks found in tracked Git files.
 
 ## Summary
-The OpenDoor Relay codebase is fully stable, locally verifiable, and functionally complete. The backend incorporates genuine Strands agent orchestration. Wait for AWS SSO re-authentication before attempting to deploy or synth infrastructure.
+The OpenDoor Relay codebase is fully stable, verifiable, and functionally complete. The deployed AWS backend incorporates genuine Strands agent orchestration. The project is ready for the final demo recording.
