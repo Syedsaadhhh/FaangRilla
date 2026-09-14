@@ -11,14 +11,18 @@ export const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<'event' | 'plan' | 'respond' | 'case'>('event');
   const [demoData, setDemoData] = useState<DemoEventData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [resetting, setResetting] = useState(false);
 
   const loadData = async () => {
+    setLoading(true);
+    setLoadError(null);
     try {
       const data = await fetchDemoEvent();
       setDemoData(data);
     } catch (err) {
       console.error('Error loading demo event data:', err);
+      setLoadError(err instanceof Error ? err.message : 'Unable to load the live demo.');
     } finally {
       setLoading(false);
     }
@@ -128,6 +132,14 @@ export const App: React.FC = () => {
       <div className="container">
         {loading ? (
           <div className="card">Loading {BRAND_CONFIG.productName} environment...</div>
+        ) : loadError ? (
+          <div className="card" role="alert">
+            <h2>Live demo connection needs a retry</h2>
+            <p>{loadError}</p>
+            <button className="btn btn-primary" onClick={loadData}>
+              Retry connection
+            </button>
+          </div>
         ) : (
           <>
             {currentPage === 'event' && (
