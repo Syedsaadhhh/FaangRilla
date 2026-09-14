@@ -1,0 +1,48 @@
+graph TD
+    %% Frontend Layer
+    subgrant Frontend
+        UI[React/Vite Frontend]
+    end
+
+    %% API Layer
+    subgrant API Layer
+        API[API Gateway\nRelayApi]
+    end
+
+    %% Backend/Compute Layer
+    subgrant Backend & Compute
+        Lambda[AWS Lambda\nBackendFunction]
+        Strands[Strands Agents SDK\nOrchestration]
+        AgentCore[Rehearsal Model\nDeterministic Mode]
+        Lambda --> Strands
+        Strands --> AgentCore
+    end
+
+    %% Data Layer
+    subgrant Data & State
+        DDB[(Amazon DynamoDB\nRelayTable)]
+    end
+
+    %% Services Layer
+    subgrant Event & Delivery Services
+        SES[Amazon SES\nAttendee Notifications]
+        EB[EventBridge Scheduler\nOffer Timeouts]
+    end
+
+    %% Relationships
+    UI -->|HTTPS| API
+    API -->|Proxy| Lambda
+    Lambda -->|Read/Write State| DDB
+    Lambda -->|Schedule Timeout| EB
+    EB -.->|Trigger Timeout| API
+    Lambda -->|Send Email| SES
+    
+    %% Styling
+    classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px;
+    classDef aws fill:#FF9900,stroke:#232F3E,stroke-width:2px,color:white;
+    classDef react fill:#61DAFB,stroke:#20232A,stroke-width:2px;
+    classDef python fill:#3776AB,stroke:#FFD43B,stroke-width:2px,color:white;
+    
+    class API,Lambda,DDB,SES,EB aws;
+    class UI react;
+    class Strands,AgentCore python;

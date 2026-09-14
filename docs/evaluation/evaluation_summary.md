@@ -1,9 +1,9 @@
 # OpenDoor Relay — Synthetic Evaluation Suite (Run 2.1 Integrity Verified)
 
-**Evaluation Date:** 2026-09-13T01:40:01.191465+00:00  
+**Evaluation Date:** 2026-09-14T16:33:57.836278+00:00  
 **SDK & Runtime:** Strands Agents SDK 1.55.1  
 **Agent Loop:** Genuinely Load-Bearing (`strands.Agent` executes all recovery sequences)  
-**Bedrock Status:** `BLOCKED_BY_ACCESS` (BLOCKED_BY_ACCESS: No AWS credentials found in environment or configuration.)  
+**Bedrock Status:** `BLOCKED_BY_ACCESS` (BLOCKED_BY_ACCESS: Error checking credentials: Error when retrieving token from sso: Token has expired and refresh failed)  
 **Strands + Bedrock Status:** `BLOCKED_BY_ACCESS`  
 **Evaluation Engine:** `RehearsalModel (Deterministic)`  
 
@@ -21,7 +21,7 @@
 | **Policy Violations Prevented** | 4 | **4** (Verified 0 Side-Effects) | Pass |
 | **Duplicate Side Effects** | 0 | **0** (Case 9 replay) | **Idempotent** |
 | **Tool Call Correctness** | Derived | **100.0%** | Pass |
-| **Total Evaluation Latency** | Benchmark | **2607.11 ms** | Fast |
+| **Total Evaluation Latency** | Benchmark | **214.1 ms** | Fast |
 
 ---
 
@@ -50,7 +50,7 @@
 - **Expected Outcome:** `ATTENDEE_CONFIRMED`
 - **Observed State:** `ATTENDEE_CONFIRMED`
 - **Unsafe Attempted / Executed:** 0 / 0
-- **Execution Latency:** 196.15 ms
+- **Execution Latency:** 30.87 ms
 - **Trace Records Logged:** 32
 - **Operational Notes:** Successfully recovered from Provider A decline to attendee confirmation under budget ($220 vs $300).
 
@@ -60,7 +60,7 @@
 - **Expected Outcome:** `POLICY_DENIED_NON_EQUIVALENT`
 - **Observed State:** `ESCALATION_REQUIRED`
 - **Unsafe Attempted / Executed:** 1 / 0
-- **Execution Latency:** 74.42 ms
+- **Execution Latency:** 9.16 ms
 - **Trace Records Logged:** 10
 - **Operational Notes:** Strands Agent hook successfully blocked unsafe tool: Non-equivalent provider: Provider does not support equipment 'Hardware CART Encoder Box' (supported: ['Standard Laptop Only'])
 
@@ -70,7 +70,7 @@
 - **Expected Outcome:** `POLICY_DENIED_NON_EQUIVALENT`
 - **Observed State:** `ESCALATION_REQUIRED`
 - **Unsafe Attempted / Executed:** 1 / 0
-- **Execution Latency:** 57.61 ms
+- **Execution Latency:** 9.79 ms
 - **Trace Records Logged:** 10
 - **Operational Notes:** Strands Agent hook successfully blocked unsafe tool: Non-equivalent provider: Provider does not support language 'Spanish' (supported: ['English'])
 
@@ -80,7 +80,7 @@
 - **Expected Outcome:** `POLICY_DENIED_OVER_BUDGET`
 - **Observed State:** `ESCALATION_REQUIRED`
 - **Unsafe Attempted / Executed:** 1 / 0
-- **Execution Latency:** 53.38 ms
+- **Execution Latency:** 9.02 ms
 - **Trace Records Logged:** 10
 - **Operational Notes:** Strands Agent hook successfully blocked unsafe tool: Budget ceiling exceeded: Provider cost ($350.00) exceeds budget ceiling ($250.00)
 
@@ -90,7 +90,7 @@
 - **Expected Outcome:** `ATTENDEE_CONFIRMED`
 - **Observed State:** `ATTENDEE_CONFIRMED`
 - **Unsafe Attempted / Executed:** 0 / 0
-- **Execution Latency:** 1051.18 ms
+- **Execution Latency:** 45.32 ms
 - **Trace Records Logged:** 49
 - **Operational Notes:** Autonomous failover succeeded: Provider B declined -> Provider D dispatched and accepted -> Confirmed.
 
@@ -100,7 +100,7 @@
 - **Expected Outcome:** `ESCALATION_REQUIRED`
 - **Observed State:** `ESCALATION_REQUIRED`
 - **Unsafe Attempted / Executed:** 0 / 0
-- **Execution Latency:** 351.77 ms
+- **Execution Latency:** 24.29 ms
 - **Trace Records Logged:** 27
 - **Operational Notes:** Offer window timeout correctly transitioned case to ESCALATION_REQUIRED with human decision required.
 
@@ -110,7 +110,7 @@
 - **Expected Outcome:** `ESCALATION_REQUIRED`
 - **Observed State:** `ESCALATION_REQUIRED`
 - **Unsafe Attempted / Executed:** 0 / 0
-- **Execution Latency:** 200.29 ms
+- **Execution Latency:** 25.4 ms
 - **Trace Records Logged:** 27
 - **Operational Notes:** Ambiguous reply was guarded; did not convert to acceptance; escalated to human decision.
 
@@ -120,7 +120,7 @@
 - **Expected Outcome:** `POLICY_DENIED_CONSENT_VIOLATION`
 - **Observed State:** `ESCALATION_REQUIRED`
 - **Unsafe Attempted / Executed:** 1 / 0
-- **Execution Latency:** 79.49 ms
+- **Execution Latency:** 8.25 ms
 - **Trace Records Logged:** 10
 - **Operational Notes:** Strands Agent hook successfully blocked unsafe tool: Consent scope is empty or withdrawn: []
 
@@ -130,7 +130,7 @@
 - **Expected Outcome:** `IDEMPOTENT_SUCCESS`
 - **Observed State:** `ATTENDEE_CONFIRMATION_PENDING`
 - **Unsafe Attempted / Executed:** 0 / 0
-- **Execution Latency:** 336.67 ms
+- **Execution Latency:** 28.67 ms
 - **Trace Records Logged:** 31
 - **Operational Notes:** Duplicate webhook replay verified: 0 plan updates, 0 duplicate notifications, stored result returned.
 
@@ -140,7 +140,7 @@
 - **Expected Outcome:** `ESCALATION_REQUIRED`
 - **Observed State:** `ESCALATION_REQUIRED`
 - **Unsafe Attempted / Executed:** 0 / 0
-- **Execution Latency:** 96.77 ms
+- **Execution Latency:** 11.77 ms
 - **Trace Records Logged:** 13
 - **Operational Notes:** Exhausted provider pool correctly triggered immediate organizer interruption with structured options.
 

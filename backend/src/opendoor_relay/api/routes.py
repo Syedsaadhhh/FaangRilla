@@ -45,16 +45,21 @@ def get_service() -> RecoveryService:
     return _recovery_service
 
 
-@router.get("/health", response_model=HealthResponse, tags=["Health"])
-def health_check() -> HealthResponse:
+@router.get("/health", tags=["Health"])
+def health_check():
     """Health check returning operational status."""
     from opendoor_relay.agent.models import get_agent_mode
-    return HealthResponse(
-        status="healthy",
-        version="0.1.0",
-        mode="local-deterministic",
-        agent_mode=get_agent_mode(),
-    )
+    import os
+    return {
+        "status": "healthy",
+        "version": "0.1.0",
+        "mode": "local-deterministic",
+        "agent_mode": get_agent_mode(),
+        "agent_framework": "strands-agents",
+        "model_mode": "deterministic-rehearsal",
+        "bedrock_status": "BLOCKED_BY_DAILY_QUOTA",
+        "agentcore_status": os.environ.get("AGENTCORE_STATUS", "NOT_DEPLOYED")
+    }
 
 
 @router.get("/api/demo/event", response_model=DemoEventResponse, tags=["Demo"])

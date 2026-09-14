@@ -18,6 +18,10 @@ class HealthResponse(BaseModel):
     version: str = "0.1.0"
     mode: str = "local-deterministic"
     agent_mode: str = "rehearsal"
+    agent_framework: str = "strands-agents"
+    model_mode: str = "deterministic-rehearsal"
+    bedrock_status: str = "BLOCKED_BY_DAILY_QUOTA"
+    agentcore_status: str = "NOT_DEPLOYED"
 
 
 class DemoEventResponse(BaseModel):

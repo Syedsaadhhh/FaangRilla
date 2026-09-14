@@ -2,17 +2,31 @@
 
 > **Judge memory sentence:** OpenDoor Relay keeps an event accessible when the original plan fails.
 
-OpenDoor Relay is an autonomous accessibility continuity engine built for community events. When a confirmed accessibility provider (e.g. live captioner or sign language interpreter) drops out shortly before an event cutoff, OpenDoor Relay rapidly and deterministically orchestrates an approved replacement, coordinates attendee confirmation, updates all operational views, and measures the exact time to recovery.
+## The Problem
+When a confirmed accessibility provider (e.g. live captioner or sign language interpreter) drops out shortly before an event cutoff, event organizers are left scrambling. OpenDoor Relay rapidly and deterministically orchestrates an approved replacement, coordinates attendee confirmation, updates all operational views, and measures the exact time to recovery. It fails closed to prevent assigning out-of-budget or unqualified providers.
 
----
+## Strands Agents Integration
+The core of OpenDoor Relay's recovery capability is built using the **Strands Agents SDK**. The autonomous recovery loop:
+1. Orchestrates the recovery sequence utilizing a suite of real tools (`find_eligible_replacements`, `create_provider_offer`, `send_provider_offer`, etc.).
+2. Classifies ambiguous or incomplete provider responses to prevent silent failures.
+3. Automatically escalates to a human event organizer with safe, pre-computed alternatives if no budget-compliant backup is available or if responses time out.
+4. Leaves a transparent, sanitized developer trace distinguishing `MODEL_DECISION` from `POLICY_APPROVED` actions.
 
-## Architecture Overview
+## AWS Architecture
+The production architecture utilizes a robust serverless stack defined entirely via AWS CDK (`infra/`):
+- **API Gateway (RelayApi):** Exposes strictly validated REST endpoints.
+- **AWS Lambda (BackendFunction):** Runs the Python 3.12 FastAPI backend + Strands orchestration.
+- **Amazon DynamoDB (RelayTable):** Provides robust state persistence with strict idempotency keys.
+- **Amazon EventBridge Scheduler:** Manages bounded execution windows for offer timeouts.
+- **Amazon SES:** Handles safe email delivery for attendee notifications.
 
-- **Frontend:** React + TypeScript + Vite (`frontend/`)
-- **Backend:** Python 3.12 FastAPI (`backend/`)
-- **Intelligence & Orchestration:** Strands Agents SDK + Amazon Bedrock (Run 2)
-- **Persistence & Cloud:** In-memory repository (Run 1) -> DynamoDB + EventBridge Scheduler + Amazon SES on AWS (Run 3)
-- **Infrastructure as Code:** AWS CDK in TypeScript (`infra/`)
+*(Note: In the current deployed environment, reserved concurrency and live Bedrock inference have been removed or downgraded to rehearsal mode due to hackathon-time AWS account quota constraints. The Lambda runs without concurrency locks, and API Gateway acts as the throttling boundary.)*
+
+## Rehearsal Limits
+To navigate AWS Bedrock access limits during the hackathon sprint, the deployment currently operates in **Deterministic Rehearsal Mode**.
+- `AGENT_MODE=rehearsal`
+- `AGENTCORE_STATUS=NOT_DEPLOYED`
+The orchestration loop exercises the genuine Strands Agent framework, but the underlying LLM is stubbed with a deterministic local model (`RehearsalModel`) that safely navigates the predefined test fixtures without needing live Bedrock tokens. This ensures the architecture and business logic can be fully evaluated.
 
 ---
 
@@ -32,12 +46,6 @@ uv venv backend/.venv --python 3.12
 # Install backend dependencies
 uv pip install -e backend/
 ```
-Or on Linux/macOS:
-```bash
-uv venv backend/.venv --python 3.12
-source backend/.venv/bin/activate
-uv pip install -e backend/
-```
 
 ### 2. Frontend Setup
 ```bash
@@ -54,41 +62,12 @@ cd ..
 ```powershell
 backend/.venv/Scripts/python -m uvicorn opendoor_relay.api.app:app --host 127.0.0.1 --port 8000 --reload
 ```
-Or on Linux/macOS:
-```bash
-backend/.venv/bin/python -m uvicorn opendoor_relay.api.app:app --host 127.0.0.1 --port 8000 --reload
-```
 
 ### Start Frontend (Port 5173)
 ```bash
 cd frontend
 npm run dev
 ```
-
-### Or Run Both Together
-Using the provided local runner:
-- **Windows:** `powershell -ExecutionPolicy Bypass -File scripts/run-local.ps1`
-- **Linux/macOS:** `./scripts/run-local.sh`
-
----
-
-## Running Tests & Verification
-
-### Run Backend Unit Tests
-```powershell
-backend/.venv/Scripts/python -m pytest backend/tests -v
-```
-
-### Run Frontend Build & Typecheck
-```bash
-cd frontend
-npm run build
-cd ..
-```
-
-### Run Automated Hero Path Verification (Run 1)
-- **Windows:** `powershell -ExecutionPolicy Bypass -File scripts/verify-run-1.ps1`
-- **Linux/macOS:** `./scripts/verify-run-1.sh`
 
 ---
 

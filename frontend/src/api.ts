@@ -1,6 +1,6 @@
 import { DemoEventData, TimelineData } from './types';
 
-const API_BASE = '';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 export async function fetchHealth(): Promise<{ status: string; mode: string }> {
   const res = await fetch(`${API_BASE}/health`);
